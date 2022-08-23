@@ -1,4 +1,5 @@
-# https://habr.com/ru/company/ruvds/blog/326328/
+#!/bin/bash
+### https://habr.com/ru/company/ruvds/blog/326328/
 printhelp () {
 	echo "Помощь по использованию:
     -p, --proc - работа с директорией /proc
@@ -14,9 +15,9 @@ printhelp () {
 
 fullprog () {
 
-echo $0
-echo $1
-echo $2
+echo "$0"
+echo "$1"
+echo "$2"
 
 while [ -n "$1" ]
 do
@@ -75,7 +76,7 @@ do
 			# сохранение результатов работы скрипта на диск
 			# дополнительная проверка на существование путей
 			# output в файл с проверкой если он больше количества строк, то записывается сначала
-			echo $2
+			echo "$2"
 			;;
 	esac
 shift
@@ -83,7 +84,7 @@ shift
 done
 }
 
-if test -z $@
+if test -z "$@"
 then
 	printhelp
 else
