@@ -1,30 +1,54 @@
-#EXAMPLE
+#! /bin/bash
 
-script_name=$(basename "$0")
-short=u:b:s:
-long=user:,branch:,start_time:,help
+function usage() {
+	cat <<USAGE
 
-read -r -d '' usage <<EOF
-Manually written help section here
-EOF
+	Usage: $0 [-t tag] [--skip-verification]
 
-TEMP=$(getopt -o $short --long $long --name "$script_name" -- "$@")
+	Options:
+		-t, --tag:            information about argument
+		--skip-verification:  information about argument
+USAGE
+	exit 1
+}
 
-eval set -- "${TEMP}"
+if [ $# -eq 0 ]; then
+	usage
+	exit 1
+fi
 
-while :; do
-    case "${1}" in
-        -u | --user       ) user=$2;             shift 2 ;;
-        -b | --branch     ) branch=$2;           shift 2 ;;
-        -s | --start_time ) start_time=$2;       shift 2 ;;
-        --help            ) echo "${usage}" 1>&2;   exit ;;
-        --                ) shift;                 break ;;
-        *                 ) echo "Error parsing"; exit 1 ;;
-    esac
+SKIP_VERIFICATION=false
+TAG=
+
+while [ "$1" != "" ]; do
+	case $1 in
+	--skip-verification)
+		SKIP_VERIFICATION=true
+		;;
+	-t | --tag)
+		TAG=$2
+		shift
+		;;
+	-h | --help)
+		usage
+		;;
+	*)
+		usage
+		exit 1
+		;;
+	esac
+	shift
 done
 
-# Set your short and long options. A colon implies it needs an option argument. Short options are written with no delimiter, long options are comma delimited.
+if [[ $TAG == "" ]]; then
+	echo "You must provide a tag";
+	exit 1;
+fi
 
-# The getopt command makes sure items come in an easily parsable order. In this example, we use a case statement to parse each option. All options are parsed first and then removed from $@.
+if [[ $SKIP_VERIFICATION == false ]]; then
+	# do not verify
+else
+	# do verify
+fi
 
-# What's left are the passed arguments that is not part of any defined option.
+# https://www.banjocode.com/post/bash/flags-bash
