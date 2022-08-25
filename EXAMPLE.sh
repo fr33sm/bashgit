@@ -46,9 +46,9 @@ if [[ $TAG == "" ]]; then
 fi
 
 if [[ $SKIP_VERIFICATION == false ]]; then
-	# do not verify
+	echo "do not verify"
 else
-	# do verify
+	echo "do verify"
 fi
 
 # https://www.banjocode.com/post/bash/flags-bash
