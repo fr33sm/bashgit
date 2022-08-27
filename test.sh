@@ -16,12 +16,10 @@ function usage() {
     -o, --output - сохранение результатов работы скрипта на диск
     -h, --help - вывод предназначения скрипта, помощи для верного запуска и описания всех команд с примерами
 USAGE
-	exit 1
 }
 
 if [ $# -eq 0 ]; then
 	usage
-	exit 1
 fi
 
 
@@ -46,16 +44,13 @@ while [ "$1" != "" ]; do
                     paste <(cat /sys/class/thermal/thermal_zone*/type) <(cat /sys/class/thermal/thermal_zone*/temp) | column -s $'\t' -t | sed 's/\(.\)..$/.\1°C/'
                 fi
                 ;;
-            quantity)
-                cat /proc/cpuinfo | grep processor | wc -l
-                ;;
             # stress)
             #     fulload() { for ((i=1; i<=`nproc --all`; i++)); do while : ; do : ; done & done }; fulload; read; killall bash ### лучше сразу брать PID процессов и кикать их отдельно
             #     ;;
             *)
+                cat /proc/cpuinfo | grep name
                 echo "используйте аругмент 'load' для отображения текущей нагрузки"
                 echo "используйте аргумент 'temp' для отображения текущей температуры"
-                echo "используйте аргумент 'quantity' для отображения количества ядер"
                 # echo "используйте аргумент 'stress' для стресс теста всех ядер процессора"
                 ;;
         esac
@@ -74,6 +69,7 @@ while [ "$1" != "" ]; do
                 cat /proc/meminfo | grep SwapFree | awk -F " " '{printf "free swap: " $2/1024 " MB\n"}'                
                 ;;
             *)
+                free -m
                 echo "используйте аругмент 'total' для отображения общего объёма ОЗУ"
                 echo "используйте аргумент 'available' для отображения доступного к использованию объёма ОЗУ"
                 echo "используйте аргумент 'swapinfo' для отображения информации о SWAP"
@@ -86,29 +82,50 @@ while [ "$1" != "" ]; do
             quantity) 
                 lsblk | grep part | wc -l | awk '{printf "number of partitions: " $1 "\n"}'
                 ;;
-            list)
-                lsblk | grep sd
-                ;;
             available)
-                df -Th | grep $3 | awk '{printf "available space: " $5 "\n"}'
-                shift
+                if [[ -f "$3" ]]
+                then
+                    df -Th | grep $3 | awk '{printf "available space: " $5 "\n"}'
+                    shift
+                else
+                    echo "disk not exist"
+                    shift
+                fi
+                ;;
+            iostat)
+                if [[ -f "$3" ]]
+                then
+                    cat /proc/diskstats | grep $3 | awk -F " " '{printf "I/Os currently in progress: " $9" \n"}'
+                    shift
+                else
+                    echo "disk not exist"
+                    shift
+                fi
                 ;;
             *)
+                lsblk | grep sd
                 echo "используйте аругмент 'quantity' для отображения общего количества разделов дисков"
-                echo "используйте 'list' для отображения списка дисков sd? (sda, sdb ...)"
                 echo "используйте аргумент 'available *имя диска*' для отображения доступного к использованию объёма ОЗУ"
+                echo "используйте аргумент 'iostat *имя диска*' для отображения текущего количества IO в очереди"
                 ;;
         esac
         shift
         ;;
     -n|--network) # работа с сетью
-        echo "network"
+        cat /proc/net/dev
         ;;
     -la|--loadaverage) # вывод средней нагрузки на систему
         cat /proc/loadavg | awk '{print "15 min load average: "$3"%"}'
         ;;
     -k|--kill) # отправка сигналов процессам (простой аналог утилиты kill) список зомби процессов и их килл
-        echo "$1"
+        if [[ -f "$2" ]]
+        then
+            echo $2
+            # killall -9 $2
+        else
+            echo "process name not entered"
+        fi
+        shift
         ;;
     -o|--output) # сохранение результатов работы скрипта на диск
         if [[ -f "$2" ]]
